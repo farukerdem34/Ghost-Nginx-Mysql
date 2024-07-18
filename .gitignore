@@ -2,3 +2,4 @@ db/
 ghost/
 *.crt
 *.key
+*.bak
