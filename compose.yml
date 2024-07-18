@@ -1,0 +1,65 @@
+version: '3.1'
+
+services:
+
+  ghost:
+    container_name: ghost
+    image: ghost:5-alpine
+    restart: always
+    #ports:
+    # - 60000:2368
+    environment:
+      # see https://ghost.org/docs/config/#configuration-options
+      database__client: mysql
+      database__connection__host: db
+      database__connection__user: root
+      database__connection__password: CHANGE_THIS
+      database__connection__database: ghost
+      # this url value is just an example, and is likely wrong for your environment!
+      url: http://your.domain
+      NODE_ENV: production
+      # contrary to the default mentioned in the linked documentation, this image defaults to NODE_ENV=production (so development mode needs to be explicitly specified if desired)
+      #NODE_ENV: development
+    volumes:
+      - ./ghost:/var/lib/ghost/content:rw
+    networks:
+      ghost:
+        ipv4_address: 10.20.0.10
+
+  db:
+    container_name: ghost_mysql
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: CHANGE_THIS
+    volumes:
+      - ./db:/var/lib/mysql:rw
+    networks:
+      ghost:
+        ipv4_address: 10.20.0.5
+
+  nginx:
+     ports: 
+      - "80:80"
+      - "443:443"
+     image: nginx:latest
+     container_name: nginx
+     networks:
+       ghost:
+     volumes:
+       - ./ghost.conf:/etc/nginx/conf.d/ghost.conf:ro
+       - ./mycert.crt:/etc/nginx/mycert.crt:ro
+       - ./mycert.key:/etc/nginx/mycert.key:ro
+
+
+
+volumes:
+  ghost:
+  db:
+
+networks:
+  ghost:
+    name: "ghost-network"
+    ipam:
+      config:
+        - subnet: 10.20.0.0/24

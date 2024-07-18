@@ -1,0 +1,4 @@
+db/
+ghost/
+*.crt
+*.key
